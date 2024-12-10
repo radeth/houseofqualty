@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Product Information</title>
+    <link href="{{ url_for('static', filename='styles.css') }}" rel="stylesheet" type="text/css">
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>Product Information</h1>
+    </header>
+    <form action="{{ url_for('form1') }}" method="post">
+        <label for="product_name">Product Name:</label>
+        <input id="product_name" name="product_name" required type="text">
+        <label for="product_description">Product Description:</label>
+        <input id="product_description" name="product_description" required type="text">
+        <input type="submit" value="Next">
+    </form>
+</div>
+</body>
+</html>

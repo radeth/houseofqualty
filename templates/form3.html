@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Technical Parameters</title>
+    <link href="{{ url_for('static', filename='styles.css') }}" rel="stylesheet" type="text/css">
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>Technical Parameters</h1>
+    </header>
+    <form action="{{ url_for('form3') }}" method="post">
+        <label for="parameter_name">Parameter Name:</label>
+        <input id="parameter_name" name="parameter_name" required type="text">
+        <label for="parameter_type">Parameter Type:</label>
+        <select id="parameter_type" name="parameter_type" required>
+            <option value="max">Maximum (⬆️)</option>
+            <option value="min">Minimum (⬇️)</option>
+            <option value="nom">Nominal (⭕)</option>
+        </select>
+        <input name="add_more" type="submit" value="Add More">
+        <input type="submit" value="Next">
+    </form>
+    <ul>
+        {% for param in technical_parameters %}
+        <li>{{ param.name }} ({{ param.type }})
+            <button>🗑️</button>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+</body>
+</html>

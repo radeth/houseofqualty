@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Parameter Dependency Matrix</title>
+    <link href="{{ url_for('static', filename='styles.css') }}" rel="stylesheet" type="text/css">
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>Parameter Dependency Matrix</h1>
+    </header>
+    <form action="{{ url_for('form5') }}" method="post">
+        {% for param1 in technical_parameters %}
+        {% for param2 in technical_parameters %}
+        {% if param1 != param2 %}
+        <label for="dependency_{{ param1.name }}_{{ param2.name }}">{{ param1.name }} - {{ param2.name }}:</label>
+        <select id="dependency_{{ param1.name }}_{{ param2.name }}"
+                name="dependency_{{ param1.name }}_{{ param2.name }}" required>
+            <option value="0">No Dependency</option>
+            <option value="+">+</option>
+            <option value="-">-</option>
+        </select>
+        {% endif %}
+        {% endfor %}
+        {% endfor %}
+        <input type="submit" value="Next">
+    </form>
+</div>
+</body>
+</html>

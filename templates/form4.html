@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Requirement-Parameter Matrix</title>
+    <link href="{{ url_for('static', filename='styles.css') }}" rel="stylesheet" type="text/css">
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>Requirement-Parameter Matrix</h1>
+    </header>
+    <form action="{{ url_for('form4') }}" method="post">
+        {% for req in customer_requirements %}
+        {% for param in technical_parameters %}
+        <label for="dependency_{{ req.name }}_{{ param.name }}">{{ req.name }} - {{ param.name }}:</label>
+        <select id="dependency_{{ req.name }}_{{ param.name }}" name="dependency_{{ req.name }}_{{ param.name }}"
+                required>
+            <option value="1">1</option>
+            <option value="3">3</option>
+            <option value="9">9</option>
+        </select>
+        {% endfor %}
+        {% endfor %}
+        <input type="submit" value="Next">
+    </form>
+</div>
+</body>
+</html>

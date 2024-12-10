@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>QFD Result</title>
+    <link href="{{ url_for('static', filename='styles.css') }}" rel="stylesheet" type="text/css">
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>QFD Result</h1>
+    </header>
+    <h2>Product Information</h2>
+    <p>Name: {{ product_info.name }}</p>
+    <p>Description: {{ product_info.description }}</p>
+    <h2>Customer Requirements</h2>
+    <ul>
+        {% for req in customer_requirements %}
+        <li>{{ req.name }} ({{ req.importance }})</li>
+        {% endfor %}
+    </ul>
+    <h2>Technical Parameters</h2>
+    <ul>
+        {% for param in technical_parameters %}
+        <li>{{ param.name }} ({{ param.type }})</li>
+        {% endfor %}
+    </ul>
+    <h2>Technical Importance</h2>
+    <ul>
+        {% for param, importance in technical_importance.items() %}
+        <li>{{ param }}: {{ importance }}</li>
+        {% endfor %}
+    </ul>
+    <form action="{{ url_for('index') }}" method="get">
+        <input type="submit" value="Back to Start">
+    </form>
+</div>
+</body>
+</html>

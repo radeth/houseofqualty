@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Customer Requirements</title>
+    <link href="{{ url_for('static', filename='styles.css') }}" rel="stylesheet" type="text/css">
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>Customer Requirements</h1>
+    </header>
+    <form action="{{ url_for('form2') }}" method="post">
+        <label for="requirement_name">Requirement Name:</label>
+        <input id="requirement_name" name="requirement_name" required type="text">
+        <label for="requirement_importance">Requirement Importance:</label>
+        <input id="requirement_importance" name="requirement_importance" required type="text">
+        <input name="add_more" type="submit" value="Add More">
+        <input type="submit" value="Next">
+    </form>
+    <ul>
+        {% for req in customer_requirements %}
+        <li>{{ req.name }} ({{ req.importance }})
+            <button>🗑️</button>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+</body>
+</html>
