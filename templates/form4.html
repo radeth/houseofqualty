@@ -1,29 +1,44 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <title>Requirement-Parameter Matrix</title>
-    <link href="{{ url_for('static', filename='styles.css') }}" rel="stylesheet" type="text/css">
+    <title>Macierz Wymagania vs Parametry</title>
+    <link href="{{ url_for('static', filename='styles.css') }}" rel="stylesheet">
 </head>
 <body>
-<div class="container">
-    <header>
-        <h1>Requirement-Parameter Matrix</h1>
-    </header>
-    <form action="{{ url_for('form4') }}" method="post">
-        {% for req in customer_requirements %}
-        {% for param in technical_parameters %}
-        <label for="dependency_{{ req.name }}_{{ param.name }}">{{ req.name }} - {{ param.name }}:</label>
-        <select id="dependency_{{ req.name }}_{{ param.name }}" name="dependency_{{ req.name }}_{{ param.name }}"
-                required>
-            <option value="1">1</option>
-            <option value="3">3</option>
-            <option value="9">9</option>
-        </select>
+<h2>Krok 4: Określenie zależności (Wymagania vs Parametry)</h2>
+<form method="POST">
+    <table border="1">
+        <thead>
+        <tr>
+            <th></th>
+            {% for p in technical_params %}
+            <th>{{ p.name }}</th>
+            {% endfor %}
+        </tr>
+        </thead>
+        <tbody>
+        {% for r in requirements %}
+        <tr>
+            <th>{{ r.name }} (w: {{ r.importance }})</th>
+            {% for p in technical_params %}
+            <td>
+                {% set key = r.name + '-' + p.name %}
+                {% set selected_value = matrix.get(key, '') %}
+                <select name="relation_{{ key }}">
+                    <option value="" {% if selected_value== 0 %}selected{% endif %}></option>
+                    <option value="1" {% if selected_value== 1 %}selected{% endif %}>1</option>
+                    <option value="3" {% if selected_value== 3 %}selected{% endif %}>3</option>
+                    <option value="9" {% if selected_value== 9 %}selected{% endif %}>9</option>
+                </select>
+            </td>
+            {% endfor %}
+        </tr>
         {% endfor %}
-        {% endfor %}
-        <input type="submit" value="Next">
-    </form>
-</div>
+        </tbody>
+    </table>
+    <button name="fill_ai" type="submit">Uzupełnij za pomocą AI</button>
+    <button name="next_step" type="submit">Dalej</button>
+</form>
 </body>
 </html>

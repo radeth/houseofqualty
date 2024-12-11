@@ -1,39 +1,36 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <title>QFD Result</title>
-    <link href="{{ url_for('static', filename='styles.css') }}" rel="stylesheet" type="text/css">
+    <title>Wynik QFD</title>
+    <link href="{{ url_for('static', filename='styles.css') }}" rel="stylesheet">
 </head>
 <body>
-<div class="container">
-    <header>
-        <h1>QFD Result</h1>
-    </header>
-    <h2>Product Information</h2>
-    <p>Name: {{ product_info.name }}</p>
-    <p>Description: {{ product_info.description }}</p>
-    <h2>Customer Requirements</h2>
-    <ul>
-        {% for req in customer_requirements %}
-        <li>{{ req.name }} ({{ req.importance }})</li>
-        {% endfor %}
-    </ul>
-    <h2>Technical Parameters</h2>
-    <ul>
-        {% for param in technical_parameters %}
-        <li>{{ param.name }} ({{ param.type }})</li>
-        {% endfor %}
-    </ul>
-    <h2>Technical Importance</h2>
-    <ul>
-        {% for param, importance in technical_importance.items() %}
-        <li>{{ param }}: {{ importance }}</li>
-        {% endfor %}
-    </ul>
-    <form action="{{ url_for('index') }}" method="get">
-        <input type="submit" value="Back to Start">
-    </form>
-</div>
+<h2>Wynik QFD</h2>
+<p><strong>Nazwa produktu:</strong> {{ product_name }}</p>
+<p><strong>Opis produktu:</strong> {{ product_description }}</p>
+
+<h3>Znaczenia techniczne parametrów</h3>
+<table border="1">
+    <thead>
+    <tr>
+        <th>Parametr</th>
+        <th>Znaczenie techniczne</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for p in tech_params %}
+    <tr>
+        <td>{{ p.name }}</td>
+        <td>{{ technical_importance[p.name] }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+<h3>Rekomendacje AI dotyczące strategii rozwoju</h3>
+<p>{{ ai_suggestion }}</p>
+
+<a href="{{ url_for('index') }}">Powrót do początku</a>
 </body>
 </html>

@@ -1,30 +1,45 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <title>Customer Requirements</title>
-    <link href="{{ url_for('static', filename='styles.css') }}" rel="stylesheet" type="text/css">
+    <title>Wymagania klientów</title>
+    <link href="{{ url_for('static', filename='styles.css') }}" rel="stylesheet">
 </head>
 <body>
-<div class="container">
-    <header>
-        <h1>Customer Requirements</h1>
-    </header>
-    <form action="{{ url_for('form2') }}" method="post">
-        <label for="requirement_name">Requirement Name:</label>
-        <input id="requirement_name" name="requirement_name" required type="text">
-        <label for="requirement_importance">Requirement Importance:</label>
-        <input id="requirement_importance" name="requirement_importance" required type="text">
-        <input name="add_more" type="submit" value="Add More">
-        <input type="submit" value="Next">
-    </form>
-    <ul>
-        {% for req in customer_requirements %}
-        <li>{{ req.name }} ({{ req.importance }})
-            <button>🗑️</button>
-        </li>
-        {% endfor %}
-    </ul>
-</div>
+<h2>Krok 2: Wymagania klientów</h2>
+<form method="POST">
+    <input name="req_name" placeholder="Nazwa wymagania" type="text">
+    <input name="req_importance" placeholder="Ważność (1-10)" type="number">
+    <button name="add_requirement" type="submit">Dodaj wymaganie</button>
+</form>
+
+<form id="deleteForm" method="POST"></form>
+
+<table>
+    <thead>
+    <tr>
+        <th>Wymaganie</th>
+        <th>Ważność</th>
+        <th>Akcja</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for req in requirements %}
+    <tr>
+        <td>{{ req.name }}</td>
+        <td>{{ req.importance }}</td>
+        <td>
+            <button form="deleteForm" name="delete_requirement" type="submit" value="{{ loop.index0 }}">🗑</button>
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+{% if requirements|length > 0 %}
+<form method="POST">
+    <button name="next_step" type="submit">Dalej</button>
+</form>
+{% endif %}
 </body>
 </html>

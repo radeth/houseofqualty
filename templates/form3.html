@@ -1,34 +1,53 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <title>Technical Parameters</title>
-    <link href="{{ url_for('static', filename='styles.css') }}" rel="stylesheet" type="text/css">
+    <title>Parametry techniczne</title>
+    <link href="{{ url_for('static', filename='styles.css') }}" rel="stylesheet">
 </head>
 <body>
-<div class="container">
-    <header>
-        <h1>Technical Parameters</h1>
-    </header>
-    <form action="{{ url_for('form3') }}" method="post">
-        <label for="parameter_name">Parameter Name:</label>
-        <input id="parameter_name" name="parameter_name" required type="text">
-        <label for="parameter_type">Parameter Type:</label>
-        <select id="parameter_type" name="parameter_type" required>
-            <option value="max">Maximum (⬆️)</option>
-            <option value="min">Minimum (⬇️)</option>
-            <option value="nom">Nominal (⭕)</option>
-        </select>
-        <input name="add_more" type="submit" value="Add More">
-        <input type="submit" value="Next">
-    </form>
-    <ul>
-        {% for param in technical_parameters %}
-        <li>{{ param.name }} ({{ param.type }})
-            <button>🗑️</button>
-        </li>
-        {% endfor %}
-    </ul>
-</div>
+<h2>Krok 3: Parametry techniczne</h2>
+<form method="POST">
+    <input name="param_name" placeholder="Nazwa parametru" type="text">
+    <select name="param_type">
+        <option value="max">Maksymalna (↑)</option>
+        <option value="min">Minimalna (↓)</option>
+        <option value="nom">Nominanta (○)</option>
+    </select>
+    <button name="add_param" type="submit">Dodaj parametr</button>
+</form>
+
+<form id="deleteForm" method="POST"></form>
+
+<table>
+    <thead>
+    <tr>
+        <th>Parametr</th>
+        <th>Typ</th>
+        <th>Akcja</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for p in technical_params %}
+    <tr>
+        <td>{{ p.name }}</td>
+        <td>
+            {% if p.type == 'max' %}↑ Maksymalna
+            {% elif p.type == 'min' %}↓ Minimalna
+            {% else %}○ Nominanta{% endif %}
+        </td>
+        <td>
+            <button form="deleteForm" name="delete_param" type="submit" value="{{ loop.index0 }}">🗑</button>
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+{% if technical_params|length > 0 %}
+<form method="POST">
+    <button name="next_step" type="submit">Dalej</button>
+</form>
+{% endif %}
 </body>
 </html>

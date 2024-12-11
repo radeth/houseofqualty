@@ -1,31 +1,48 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <title>Parameter Dependency Matrix</title>
-    <link href="{{ url_for('static', filename='styles.css') }}" rel="stylesheet" type="text/css">
+    <title>Macierz Parametry vs Parametry</title>
+    <link href="{{ url_for('static', filename='styles.css') }}" rel="stylesheet">
 </head>
 <body>
-<div class="container">
-    <header>
-        <h1>Parameter Dependency Matrix</h1>
-    </header>
-    <form action="{{ url_for('form5') }}" method="post">
-        {% for param1 in technical_parameters %}
-        {% for param2 in technical_parameters %}
-        {% if param1 != param2 %}
-        <label for="dependency_{{ param1.name }}_{{ param2.name }}">{{ param1.name }} - {{ param2.name }}:</label>
-        <select id="dependency_{{ param1.name }}_{{ param2.name }}"
-                name="dependency_{{ param1.name }}_{{ param2.name }}" required>
-            <option value="0">No Dependency</option>
-            <option value="+">+</option>
-            <option value="-">-</option>
-        </select>
-        {% endif %}
+<h2>Krok 5: Zależności między parametrami technicznymi</h2>
+<form method="POST">
+    <table border="1">
+        <thead>
+        <tr>
+            <th></th>
+            {% for p in technical_params %}
+            <th>{{ p.name }}</th>
+            {% endfor %}
+        </tr>
+        </thead>
+        <tbody>
+        {% for p1 in technical_params %}
+        <tr>
+            <th>{{ p1.name }}</th>
+            {% for p2 in technical_params %}
+            {% if p1.name == p2.name %}
+            <td style="background:#eee;"></td>
+            {% else %}
+            <td>
+                <select name="relation_{{p1.name}}_{{p2.name}}">
+                    <option if matrix.get((p1.name, p2.name), value="" {%
+                    "") == "" %}selected{% endif %}>brak</option>
+                    <option if matrix.get((p1.name, p2.name), value="+" {%
+                    "") == "+" %}selected{% endif %}>+</option>
+                    <option if matrix.get((p1.name, p2.name), value="-" {%
+                    "") == "-" %}selected{% endif %}>-</option>
+                </select>
+            </td>
+            {% endif %}
+            {% endfor %}
+        </tr>
         {% endfor %}
-        {% endfor %}
-        <input type="submit" value="Next">
-    </form>
-</div>
+        </tbody>
+    </table>
+    <button name="fill_ai" type="submit">Uzupełnij za pomocą AI</button>
+    <button name="next_step" type="submit">Dalej</button>
+</form>
 </body>
 </html>
