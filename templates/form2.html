@@ -2,44 +2,45 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <title>Wymagania klientów</title>
-    <link href="{{ url_for('static', filename='styles.css') }}" rel="stylesheet">
+    <title>Krok 2 - Wymagania klientów</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
-<h2>Krok 2: Wymagania klientów</h2>
-<form method="POST">
-    <input name="req_name" placeholder="Nazwa wymagania" type="text">
-    <input name="req_importance" placeholder="Ważność (1-10)" type="number">
-    <button name="add_requirement" type="submit">Dodaj wymaganie</button>
-</form>
+<div class="container">
+    <h2>Krok 2: Dodaj wymagania klientów</h2>
+    <form method="POST">
+        <label>Nazwa wymagania:</label>
+        <input type="text" name="name" required>
+        <label>Ocena ważności (1–10):</label>
+        <select name="importance">
+            {% for i in range(1,11) %}
+            <option value="{{ i }}">{{ i }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit" class="btn">Dodaj</button>
+    </form>
 
-<form id="deleteForm" method="POST"></form>
+    {% if requirements %}
+    <h3>Lista wymagań klientów:</h3>
+    <table>
+        <tr>
+            <th>Nazwa</th><th>Ważność</th><th>Usuń</th>
+        </tr>
+        {% for req in requirements %}
+        <tr>
+            <td>{{ req.name }}</td>
+            <td>{{ req.importance }}</td>
+            <td><a class="icon-btn" href="{{ url_for('delete_requirement', index=loop.index0) }}">🗑️</a></td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
 
-<table>
-    <thead>
-    <tr>
-        <th>Wymaganie</th>
-        <th>Ważność</th>
-        <th>Akcja</th>
-    </tr>
-    </thead>
-    <tbody>
-    {% for req in requirements %}
-    <tr>
-        <td>{{ req.name }}</td>
-        <td>{{ req.importance }}</td>
-        <td>
-            <button form="deleteForm" name="delete_requirement" type="submit" value="{{ loop.index0 }}">🗑</button>
-        </td>
-    </tr>
-    {% endfor %}
-    </tbody>
-</table>
-
-{% if requirements|length > 0 %}
-<form method="POST">
-    <button name="next_step" type="submit">Dalej</button>
-</form>
-{% endif %}
+    {% if requirements|length > 0 %}
+    <form action="{{ url_for('form3') }}" method="GET">
+        <button type="submit" class="btn">Dalej</button>
+    </form>
+    {% endif %}
+</div>
 </body>
 </html>

@@ -2,52 +2,46 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <title>Parametry techniczne</title>
-    <link href="{{ url_for('static', filename='styles.css') }}" rel="stylesheet">
+    <title>Krok 3 - Parametry techniczne</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
-<h2>Krok 3: Parametry techniczne</h2>
-<form method="POST">
-    <input name="param_name" placeholder="Nazwa parametru" type="text">
-    <select name="param_type">
-        <option value="max">Maksymalna (↑)</option>
-        <option value="min">Minimalna (↓)</option>
-        <option value="nom">Nominanta (○)</option>
-    </select>
-    <button name="add_param" type="submit">Dodaj parametr</button>
-</form>
+<div class="container">
+    <h2>Krok 3: Dodaj parametry techniczne</h2>
+    <form method="POST">
+        <label>Nazwa parametru:</label>
+        <input type="text" name="name" required>
 
-<form id="deleteForm" method="POST"></form>
+        <label>Charakter optymalizacji:</label>
+        <select name="category">
+            <option value="Maksymalna">Maksymalna (↑)</option>
+            <option value="Minimalna">Minimalna (↓)</option>
+            <option value="Nominanta">Nominanta (○)</option>
+        </select>
+        <button type="submit" class="btn">Dodaj</button>
+    </form>
 
-<table>
-    <thead>
-    <tr>
-        <th>Parametr</th>
-        <th>Typ</th>
-        <th>Akcja</th>
-    </tr>
-    </thead>
-    <tbody>
-    {% for p in technical_params %}
-    <tr>
-        <td>{{ p.name }}</td>
-        <td>
-            {% if p.type == 'max' %}↑ Maksymalna
-            {% elif p.type == 'min' %}↓ Minimalna
-            {% else %}○ Nominanta{% endif %}
-        </td>
-        <td>
-            <button form="deleteForm" name="delete_param" type="submit" value="{{ loop.index0 }}">🗑</button>
-        </td>
-    </tr>
-    {% endfor %}
-    </tbody>
-</table>
+    {% if parameters %}
+    <h3>Lista parametrów technicznych:</h3>
+    <table>
+        <tr>
+            <th>Nazwa</th><th>Kategoria</th><th>Usuń</th>
+        </tr>
+        {% for p in parameters %}
+        <tr>
+            <td>{{ p.name }}</td>
+            <td>{{ p.category }}</td>
+            <td><a class="icon-btn" href="{{ url_for('delete_parameter', index=loop.index0) }}">🗑️</a></td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
 
-{% if technical_params|length > 0 %}
-<form method="POST">
-    <button name="next_step" type="submit">Dalej</button>
-</form>
-{% endif %}
+    {% if parameters|length > 0 %}
+    <form action="{{ url_for('form4') }}" method="GET">
+        <button type="submit" class="btn">Dalej</button>
+    </form>
+    {% endif %}
+</div>
 </body>
 </html>

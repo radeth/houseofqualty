@@ -2,43 +2,44 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <title>Macierz Wymagania vs Parametry</title>
-    <link href="{{ url_for('static', filename='styles.css') }}" rel="stylesheet">
+    <title>Krok 4 - Zależności wymagań vs parametry</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
-<h2>Krok 4: Określenie zależności (Wymagania vs Parametry)</h2>
-<form method="POST">
-    <table border="1">
-        <thead>
-        <tr>
-            <th></th>
-            {% for p in technical_params %}
-            <th>{{ p.name }}</th>
+<div class="container">
+    <h2>Krok 4: Oceń zależność wymagań klientów i parametrów technicznych</h2>
+    <p>Wybierz relację: 1 (słaba), 3 (średnia), 9 (silna)</p>
+
+    <form method="GET">
+        <button class="btn" name="ai_fill" value="1">Uzupełnij za pomocą AI</button>
+    </form>
+
+    <form method="POST">
+        <table>
+            <tr>
+                <th>Wymaganie / Parametr</th>
+                {% for p in parameters %}
+                <th>{{ p.name }}</th>
+                {% endfor %}
+            </tr>
+            {% for i, req in enumerate(requirements) %}
+            <tr>
+                <td>{{ req.name }} (ważność: {{ req.importance }})</td>
+                {% for j, param in enumerate(parameters) %}
+                <td>
+                    <select name="relation_{{i}}_{{j}}">
+                        <option value="0" {% if matrix[i][j] == 0 %}selected{% endif %}>0</option>
+                        <option value="1" {% if matrix[i][j] == 1 %}selected{% endif %}>1</option>
+                        <option value="3" {% if matrix[i][j] == 3 %}selected{% endif %}>3</option>
+                        <option value="9" {% if matrix[i][j] == 9 %}selected{% endif %}>9</option>
+                    </select>
+                </td>
+                {% endfor %}
+            </tr>
             {% endfor %}
-        </tr>
-        </thead>
-        <tbody>
-        {% for r in requirements %}
-        <tr>
-            <th>{{ r.name }} (w: {{ r.importance }})</th>
-            {% for p in technical_params %}
-            <td>
-                {% set key = r.name + '-' + p.name %}
-                {% set selected_value = matrix.get(key, '') %}
-                <select name="relation_{{ key }}">
-                    <option value="" {% if selected_value== 0 %}selected{% endif %}></option>
-                    <option value="1" {% if selected_value== 1 %}selected{% endif %}>1</option>
-                    <option value="3" {% if selected_value== 3 %}selected{% endif %}>3</option>
-                    <option value="9" {% if selected_value== 9 %}selected{% endif %}>9</option>
-                </select>
-            </td>
-            {% endfor %}
-        </tr>
-        {% endfor %}
-        </tbody>
-    </table>
-    <button name="fill_ai" type="submit">Uzupełnij za pomocą AI</button>
-    <button name="next_step" type="submit">Dalej</button>
-</form>
+        </table>
+        <button type="submit" class="btn">Dalej</button>
+    </form>
+</div>
 </body>
 </html>
