@@ -2,44 +2,41 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <title>Krok 4 - Zależności wymagań vs parametry</title>
+    <title>Formularz 4</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+
 </head>
 <body>
-<div class="container">
-    <h2>Krok 4: Oceń zależność wymagań klientów i parametrów technicznych</h2>
-    <p>Wybierz relację: 1 (słaba), 3 (średnia), 9 (silna)</p>
+<h1>Formularz 4: Macierz relacji Wymagania vs Parametry</h1>
 
-    <form method="GET">
-        <button class="btn" name="ai_fill" value="1">Uzupełnij za pomocą AI</button>
-    </form>
-
-    <form method="POST">
-        <table>
-            <tr>
-                <th>Wymaganie / Parametr</th>
-                {% for p in parameters %}
-                <th>{{ p.name }}</th>
-                {% endfor %}
-            </tr>
-            {% for i, req in enumerate(requirements) %}
-            <tr>
-                <td>{{ req.name }} (ważność: {{ req.importance }})</td>
-                {% for j, param in enumerate(parameters) %}
-                <td>
-                    <select name="relation_{{i}}_{{j}}">
-                        <option value="0" {% if matrix[i][j] == 0 %}selected{% endif %}>0</option>
-                        <option value="1" {% if matrix[i][j] == 1 %}selected{% endif %}>1</option>
-                        <option value="3" {% if matrix[i][j] == 3 %}selected{% endif %}>3</option>
-                        <option value="9" {% if matrix[i][j] == 9 %}selected{% endif %}>9</option>
-                    </select>
-                </td>
-                {% endfor %}
-            </tr>
+<form method="post">
+    <table border="1" cellpadding="5">
+        <tr>
+            <th></th>
+            {% for param in technical_params %}
+            <th>{{ param.name }}</th>
             {% endfor %}
-        </table>
-        <button type="submit" class="btn">Dalej</button>
-    </form>
-</div>
+        </tr>
+        {% for req_i, req in enumerate(client_requirements) %}
+        <tr>
+            <th>{{ req.name }} ({{ req.importance }})</th>
+            {% for param_j, param in enumerate(technical_params) %}
+            <td>
+                <select name="relation_{{req_i}}_{{param_j}}">
+                    <option value="" {% if relations_matrix[req_i][param_j] is none %}selected{% endif %}></option>
+                    <option value="1" {% if relations_matrix[req_i][param_j]=='1' %}selected{% endif %}>1</option>
+                    <option value="3" {% if relations_matrix[req_i][param_j]=='3' %}selected{% endif %}>3</option>
+                    <option value="9" {% if relations_matrix[req_i][param_j]=='9' %}selected{% endif %}>9</option>
+                </select>
+            </td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </table>
+    <br>
+    <button type="submit" name="action" value="fill_ai">Uzupełnij za pomocą AI (1)</button>
+    <button type="submit" name="action" value="save">Dalej</button>
+</form>
+
 </body>
 </html>

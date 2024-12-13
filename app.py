@@ -1,225 +1,230 @@
-from flask import Flask, render_template, request, redirect, url_for
-import openai
-import os
+from flask import Flask, render_template, request, redirect, url_for, session
+# from flask import Markup
 
 app = Flask(__name__)
-
-# Ustaw swój klucz OpenAI
-openai.api_key = "TWOJ_OPENAI_API_KEY"
-
-# Zmienne globalne przechowujące dane w pamięci
-product_info = {"name": "", "description": ""}
-client_requirements = []  # lista słowników: {"name": "", "importance": int}
-technical_parameters = []  # lista słowników: {"name": "", "category": "Maksymalna/Minimalna/Nominanta"}
-
-# Macierz wymagań vs parametry: wartości 1,3,9
-# Będzie to lista list o wymiarach [len(client_requirements)][len(technical_parameters)]
-requirements_matrix = []
-
-# Macierz parametry vs parametry: wartości brak, +, -
-# Będzie to lista list o wymiarach [len(technical_parameters)][len(technical_parameters)]
-parameters_matrix = []
-
-def compute_technical_significance():
-    """
-    Wylicza znaczenie techniczne poszczególnych parametrów na podstawie
-    macierzy wymagań. Znaczenie = suma(ocena ważności wymagania * zależność).
-    Zwraca listę wartości znaczeń technicznych w kolejności parametrów.
-    """
-    global client_requirements, technical_parameters, requirements_matrix
-    if not client_requirements or not technical_parameters or not requirements_matrix:
-        return []
-    significance = [0]*len(technical_parameters)
-    for i, req in enumerate(client_requirements):
-        imp = int(req["importance"])
-        for j, val in enumerate(requirements_matrix[i]):
-            # val to '1', '3', lub '9' -> konwersja na int
-            significance[j] += imp * int(val)
-    return significance
-
-def generate_development_suggestions(significance, parameters_matrix):
-    """
-    Generuje sugestie rozwojowe wykorzystując OpenAI,
-    opierając się na nazwie i opisie produktu oraz obliczonych znaczeniach i korelacjach.
-    """
-    global product_info, technical_parameters
-    # Przygotowanie promptu
-    prompt = f"""
-Analizujesz produkt: {product_info['name']}.
-Opis: {product_info['description']}.
-
-Posiadasz listę parametrów technicznych i ich znaczenie:
-{[p['name'] for p in technical_parameters]} z odpowiadającymi znaczeniami: {significance}.
-
-Posiadasz też macierz zależności pomiędzy parametrami technicznymi (brak, +, -):
-{parameters_matrix}
-
-Zaproponuj proces rozwoju produktu w oparciu o powyższe dane.
-Podaj wskazówki rozwojowe, priorytety i optymalną ścieżkę z uwzględnieniem korelacji parametrów.
-Odpowiedź przedstaw w klarownej formie, najlepiej w formie wypunktowanej listy.
-"""
-    response = openai.Completion.create(
-        model="text-davinci-003",
-        prompt=prompt,
-        max_tokens=500,
-        temperature=0.7
-    )
-    return response.choices[0].text.strip()
-
-
-@app.route("/")
+app.secret_key = 'supersecretkey'  # Sekretny klucz do sesji
+app.jinja_env.globals.update(enumerate=enumerate,zip=zip)
+@app.route('/')
 def index():
-    return render_template("index.html")
+    # Strona główna
+    return render_template('index.html')
 
-@app.route("/form1", methods=["GET", "POST"])
+@app.route('/form1', methods=['GET', 'POST'])
 def form1():
-    if request.method == "POST":
-        product_info["name"] = request.form["name"].strip()
-        product_info["description"] = request.form["description"].strip()
-        return redirect(url_for("form2"))
-    return render_template("form1.html")
+    # Formularz: Nazwa produktu i Opis produktu
+    if request.method == 'POST':
+        product_name = request.form.get('product_name', '').strip()
+        product_desc = request.form.get('product_desc', '').strip()
+        if product_name and product_desc:
+            session['product_name'] = product_name
+            session['product_desc'] = product_desc
+            # Inicjalizacja struktur danych w sesji
+            session['client_requirements'] = []
+            session['technical_params'] = []
+            session['relations_matrix'] = []
+            session['technical_relations_matrix'] = []
+            return redirect(url_for('form2'))
+    return render_template('form1.html')
 
-@app.route("/form2", methods=["GET", "POST"])
+@app.route('/form2', methods=['GET', 'POST'])
 def form2():
-    if request.method == "POST":
-        # Dodawanie wymagań klientów
-        name = request.form.get("name", "").strip()
-        importance = request.form.get("importance", "5").strip()
-        if name:
-            client_requirements.append({"name": name, "importance": importance})
-    return render_template("form2.html", requirements=client_requirements)
+    # Formularz dodawania wymagań klienta
+    # Wymagania: nazwa + ocena ważności (1-10)
+    if 'client_requirements' not in session:
+        session['client_requirements'] = []
 
-@app.route("/delete_requirement/<int:index>")
-def delete_requirement(index):
-    if 0 <= index < len(client_requirements):
-        del client_requirements[index]
-    return redirect(url_for("form2"))
+    if request.method == 'POST':
+        action = request.form.get('action')
+        if action == 'add':
+            req_name = request.form.get('req_name', '').strip()
+            req_importance = request.form.get('req_importance', '').strip()
+            if req_name and req_importance:
+                client_req = session['client_requirements']
+                client_req.append({'name': req_name, 'importance': int(req_importance)})
+                session['client_requirements'] = client_req
+        elif action == 'delete':
+            index_to_delete = request.form.get('delete_index')
+            if index_to_delete is not None:
+                index_to_delete = int(index_to_delete)
+                client_req = session['client_requirements']
+                if 0 <= index_to_delete < len(client_req):
+                    del client_req[index_to_delete]
+                    session['client_requirements'] = client_req
+        elif action == 'next':
+            # Przejdź do kolejnego formularza, jeśli jest przynajmniej 1 wymaganie
+            if len(session['client_requirements']) > 0:
+                return redirect(url_for('form3'))
 
-@app.route("/form3", methods=["GET", "POST"])
+    return render_template('form2.html', client_requirements=session['client_requirements'])
+
+@app.route('/form3', methods=['GET', 'POST'])
 def form3():
-    if request.method == "POST":
-        name = request.form.get("name", "").strip()
-        category = request.form.get("category", "")
-        if name:
-            technical_parameters.append({"name": name, "category": category})
-    return render_template("form3.html", parameters=technical_parameters)
+    # Formularz dodawania parametrów technicznych
+    # param: nazwa, typ (Maksymalna, Minimalna, Nominanta)
+    if 'technical_params' not in session:
+        session['technical_params'] = []
 
-@app.route("/delete_parameter/<int:index>")
-def delete_parameter(index):
-    if 0 <= index < len(technical_parameters):
-        del technical_parameters[index]
-    return redirect(url_for("form3"))
+    if request.method == 'POST':
+        action = request.form.get('action')
+        if action == 'add':
+            param_name = request.form.get('param_name', '').strip()
+            param_type = request.form.get('param_type', '').strip()
+            if param_name and param_type:
+                tech_params = session['technical_params']
+                tech_params.append({'name': param_name, 'type': param_type})
+                session['technical_params'] = tech_params
+        elif action == 'delete':
+            index_to_delete = request.form.get('delete_index')
+            if index_to_delete is not None:
+                index_to_delete = int(index_to_delete)
+                tech_params = session['technical_params']
+                if 0 <= index_to_delete < len(tech_params):
+                    del tech_params[index_to_delete]
+                    session['technical_params'] = tech_params
+        elif action == 'next':
+            if len(session['technical_params']) > 0:
+                # Przygotuj macierz relacji dla kolejnego formularza
+                # Liczba wymagań x liczba parametrów technicznych
+                cr = session['client_requirements']
+                tp = session['technical_params']
+                relations_matrix = [[None for _ in tp] for _ in cr]
+                session['relations_matrix'] = relations_matrix
+                return redirect(url_for('form4'))
 
-@app.route("/form4", methods=["GET", "POST"])
+    return render_template('form3.html', technical_params=session['technical_params'])
+
+@app.route('/form4', methods=['GET', 'POST'])
 def form4():
-    global requirements_matrix
-    # Inicjalizacja lub reset macierzy, jeśli zmieniono dane
-    if len(requirements_matrix) != len(client_requirements):
-        requirements_matrix = [[0]*len(technical_parameters) for _ in range(len(client_requirements))]
-    if request.method == "POST":
-        # Zapis danych z formularza
-        for i in range(len(client_requirements)):
-            for j in range(len(technical_parameters)):
-                key = f"relation_{i}_{j}"
-                val = request.form.get(key, "0")
-                requirements_matrix[i][j] = val
-        return redirect(url_for("form5"))
+    client_requirements = [
+        "Requirement 1",
+        "Requirement 2",
+        "Requirement 3"
+    ]
+    # Macierz relacji wymagań klienta do parametrów technicznych
+    if 'client_requirements' not in session or 'technical_params' not in session:
+        return redirect(url_for('index'))
 
-    if request.args.get("ai_fill") == "1":
-        # Uzupełnienie za pomocą AI
-        # Przygotowanie promptu do OpenAI
-        prompt = f"""
-Posiadasz produkt: {product_info['name']}.
-Opis produktu: {product_info['description']}
+    cr = session['client_requirements']
+    tp = session['technical_params']
+    relations_matrix = session.get('relations_matrix', [])
 
-Lista wymagań klientów:
-{[r['name'] for r in client_requirements]}
+    if request.method == 'POST':
+        action = request.form.get('action')
+        if action == 'fill_ai':
+            # Uzupełnij wszystkie pola wartością '1'
+            for i in range(len(cr)):
+                for j in range(len(tp)):
+                    relations_matrix[i][j] = '1'
+            session['relations_matrix'] = relations_matrix
+        elif action == 'save':
+            # Zapisz dane z formularza
+            all_filled = True
+            for i in range(len(cr)):
+                for j in range(len(tp)):
+                    field_name = f"relation_{i}_{j}"
+                    value = request.form.get(field_name)
+                    if value is None or value not in ['1','3','9']:
+                        all_filled = False
+                    else:
+                        relations_matrix[i][j] = value
 
-Lista parametrów technicznych:
-{[p['name'] for p in technical_parameters]}
+            if all_filled:
+                session['relations_matrix'] = relations_matrix
+                # Przejdź dalej do form5
+                # Przygotuj macierz relacji parametrów technicznych do siebie
+                count_tp = len(tp)
+                technical_relations_matrix = [[None for _ in range(count_tp)] for _ in range(count_tp)]
+                session['technical_relations_matrix'] = technical_relations_matrix
+                return redirect(url_for('form5'))
+            else:
+                # Nie wszystkie pola uzupełnione
+                pass
 
-Stwórz macierz zależności pomiędzy wymaganiami klientów a parametrami technicznymi.
-Użyj wartości 1, 3, lub 9. 
-Przedstaw wynik w formacie Pythonowej listy list, np. [[1,3],[9,1]] tak, aby można było zrobić eval().
-"""
-        response = openai.Completion.create(
-            model="text-davinci-003",
-            prompt=prompt,
-            max_tokens=500,
-            temperature=0.7
-        )
-        try:
-            ai_result = response.choices[0].text.strip()
-            # Próba zinterpretowania wyniku jako listy list
-            new_matrix = eval(ai_result)
-            # Sprawdzenie rozmiarów
-            if len(new_matrix) == len(client_requirements) and all(len(row) == len(technical_parameters) for row in new_matrix):
-                requirements_matrix = new_matrix
-        except:
-            pass
+    return render_template('form4.html', client_requirements=cr, technical_params=tp, relations_matrix=relations_matrix)
 
-    return render_template("form4.html",
-                           requirements=client_requirements,
-                           parameters=technical_parameters,
-                           matrix=requirements_matrix)
-
-@app.route("/form5", methods=["GET", "POST"])
+@app.route('/form5', methods=['GET', 'POST'])
 def form5():
-    global parameters_matrix
-    if len(parameters_matrix) != len(technical_parameters):
-        parameters_matrix = [["brak"]*len(technical_parameters) for _ in range(len(technical_parameters))]
+    # Macierz relacji parametrów technicznych między sobą
+    if 'technical_params' not in session:
+        return redirect(url_for('index'))
 
-    if request.method == "POST":
-        for i in range(len(technical_parameters)):
-            for j in range(len(technical_parameters)):
-                key = f"relation_{i}_{j}"
-                val = request.form.get(key, "brak")
-                parameters_matrix[i][j] = val
-        return redirect(url_for("result"))
+    tp = session['technical_params']
+    technical_relations_matrix = session.get('technical_relations_matrix', [])
 
-    if request.args.get("ai_fill") == "1":
-        # Uzupełnienie za pomocą AI
-        prompt = f"""
-Posiadasz produkt: {product_info['name']}.
-Opis produktu: {product_info['description']}
+    if request.method == 'POST':
+        action = request.form.get('action')
+        if action == 'fill_ai':
+            # Uzupełnij wszystkie pola wartością 'brak'
+            for i in range(len(tp)):
+                for j in range(len(tp)):
+                    if i == j:
+                        technical_relations_matrix[i][j] = 'brak' # na przekątnej może być zawsze brak?
+                    else:
+                        technical_relations_matrix[i][j] = 'brak'
+            session['technical_relations_matrix'] = technical_relations_matrix
+        elif action == 'save':
+            # Zapisz dane z formularza
+            all_filled = True
+            for i in range(len(tp)):
+                for j in range(len(tp)):
+                    field_name = f"tech_relation_{i}_{j}"
+                    # Nieco logiczne - pole relacji dla (i,i) może być brak z definicji
+                    if i == j:
+                        value = 'brak'
+                    else:
+                        value = request.form.get(field_name)
+                    if value not in ['brak','pozytywna','negatywna']:
+                        all_filled = False
+                    else:
+                        technical_relations_matrix[i][j] = value
+            if all_filled:
+                session['technical_relations_matrix'] = technical_relations_matrix
+                return redirect(url_for('result'))
+            else:
+                # Nie wszystkie pola uzupełnione
+                pass
 
-Lista parametrów technicznych:
-{[p['name'] for p in technical_parameters]}
+    return render_template('form5.html', technical_params=tp, technical_relations_matrix=technical_relations_matrix)
 
-Stwórz macierz zależności pomiędzy parametrami technicznymi.
-Użyj wartości: "brak", "+", lub "-".
-Przedstaw wynik w formacie Pythonowej listy list np. [["brak","+"],["-","brak"]].
-"""
-        response = openai.Completion.create(
-            model="text-davinci-003",
-            prompt=prompt,
-            max_tokens=500,
-            temperature=0.7
-        )
-        try:
-            ai_result = response.choices[0].text.strip()
-            new_matrix = eval(ai_result)
-            if len(new_matrix) == len(technical_parameters) and all(len(row) == len(technical_parameters) for row in new_matrix):
-                parameters_matrix = new_matrix
-        except:
-            pass
-
-    return render_template("form5.html",
-                           parameters=technical_parameters,
-                           matrix=parameters_matrix)
-
-@app.route("/result")
+@app.route('/result', methods=['GET'])
 def result():
-    significance = compute_technical_significance()
-    suggestions = generate_development_suggestions(significance, parameters_matrix)
-    return render_template("result.html",
-                           product=product_info,
-                           requirements=client_requirements,
-                           parameters=technical_parameters,
-                           requirements_matrix=requirements_matrix,
-                           parameters_matrix=parameters_matrix,
-                           significance=significance,
-                           suggestions=suggestions)
+    # Wyświetlenie drzewa QFD i wyliczeń
+    product_name = session.get('product_name', '')
+    product_desc = session.get('product_desc', '')
+    cr = session.get('client_requirements', [])
+    tp = session.get('technical_params', [])
+    relations_matrix = session.get('relations_matrix', [])
+    technical_relations_matrix = session.get('technical_relations_matrix', [])
 
-if __name__ == "__main__":
+    # Oblicz znaczenie techniczne parametrów:
+    # Dla każdego parametru technicznego sumujemy: (ocena ważności wymagania * relacja)
+    # relacja jest w {1,3,9}, waga wymagania w {1..10}
+    tech_scores = [0]*len(tp)
+
+    for i, req in enumerate(cr):
+        for j, param in enumerate(tp):
+            val = relations_matrix[i][j]
+            if val is not None:
+                val_int = int(val)
+                importance = req['importance']
+                tech_scores[j] += val_int * importance
+
+    # Propozycja rozwoju produktu - przykładowo:
+    # Wybierz parametry z najwyższą sumą punktów technicznych do wzmocnienia/usprawnienia
+    sorted_params = sorted(zip(tp, tech_scores), key=lambda x: x[1], reverse=True)
+    # top_3 do rozwoju
+    top_3 = sorted_params[:3] if len(sorted_params) >= 3 else sorted_params
+
+    return render_template('result.html',
+                           product_name=product_name,
+                           product_desc=product_desc,
+                           client_requirements=cr,
+                           technical_params=tp,
+                           relations_matrix=relations_matrix,
+                           technical_relations_matrix=technical_relations_matrix,
+                           tech_scores=tech_scores,
+                           top_3=top_3)
+
+
+if __name__ == '__main__':
     app.run(debug=True)

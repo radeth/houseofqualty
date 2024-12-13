@@ -2,43 +2,43 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <title>Krok 5 - Zależności parametry vs parametry</title>
+    <title>Formularz 5</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
-<div class="container">
-    <h2>Krok 5: Oceń zależność między parametrami technicznymi</h2>
-    <p>Wybierz relację: brak, "+", "-" (oznacza wpływ parametru na inny)</p>
+<h1>Formularz 5: Macierz relacji pomiędzy Parametrami Technicznymi</h1>
 
-    <form method="GET">
-        <button class="btn" name="ai_fill" value="1">Uzupełnij za pomocą AI</button>
-    </form>
+<form method="post">
+<table border="1" cellpadding="5">
+    <tr>
+        <th></th>
+        {% for param in technical_params %}
+        <th>{{ param.name }}</th>
+        {% endfor %}
+    </tr>
+    {% for i, p1 in enumerate(technical_params) %}
+    <tr>
+        <th>{{ p1.name }}</th>
+        {% for j, p2 in enumerate(technical_params) %}
+        <td>
+            {% if i == j %}
+                brak
+            {% else %}
+                <select name="tech_relation_{{i}}_{{j}}">
+                    <option value="brak" {% if technical_relations_matrix[i][j]=='brak' or technical_relations_matrix[i][j] is none %}selected{% endif %}>brak</option>
+                    <option value="pozytywna" {% if technical_relations_matrix[i][j]=='pozytywna' %}selected{% endif %}>pozytywna</option>
+                    <option value="negatywna" {% if technical_relations_matrix[i][j]=='negatywna' %}selected{% endif %}>negatywna</option>
+                </select>
+            {% endif %}
+        </td>
+        {% endfor %}
+    </tr>
+    {% endfor %}
+</table>
+<br>
+<button type="submit" name="action" value="fill_ai">Uzupełnij za pomocą AI (brak)</button>
+<button type="submit" name="action" value="save">Dalej</button>
+</form>
 
-    <form method="POST">
-        <table>
-            <tr>
-                <th>Parametr \ Parametr</th>
-                {% for p in parameters %}
-                <th>{{ p.name }}</th>
-                {% endfor %}
-            </tr>
-            {% for i, param1 in enumerate(parameters) %}
-            <tr>
-                <td>{{ param1.name }}</td>
-                {% for j, param2 in enumerate(parameters) %}
-                <td>
-                    <select name="relation_{{i}}_{{j}}">
-                        <option value="brak" {% if matrix[i][j]=='brak' %}selected{% endif %}>brak</option>
-                        <option value="+" {% if matrix[i][j]=='+' %}selected{% endif %}>+</option>
-                        <option value="-" {% if matrix[i][j]=='-' %}selected{% endif %}>-</option>
-                    </select>
-                </td>
-                {% endfor %}
-            </tr>
-            {% endfor %}
-        </table>
-        <button type="submit" class="btn">Dalej</button>
-    </form>
-</div>
 </body>
 </html>

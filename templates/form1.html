@@ -2,21 +2,16 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <title>Krok 1 - Dane produktu</title>
+    <title>Formularz 1</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+
 </head>
 <body>
-<div class="container">
-    <h2>Krok 1: Podaj dane produktu</h2>
-    <form method="POST">
-        <label>Nazwa produktu:</label>
-        <input type="text" name="name" required>
-
-        <label>Opis produktu:</label>
-        <textarea name="description" required></textarea>
-
-        <button type="submit" class="btn">Dalej</button>
-    </form>
-</div>
+<h1>Formularz 1: Dane Produktu</h1>
+<form method="post">
+    <label>Nazwa produktu: <input type="text" name="product_name"></label><br><br>
+    <label>Opis produktu: <textarea name="product_desc"></textarea></label><br><br>
+    <button type="submit">Dalej</button>
+</form>
 </body>
 </html>

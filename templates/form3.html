@@ -2,46 +2,47 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <title>Krok 3 - Parametry techniczne</title>
+    <title>Formularz 3</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+
 </head>
 <body>
-<div class="container">
-    <h2>Krok 3: Dodaj parametry techniczne</h2>
-    <form method="POST">
-        <label>Nazwa parametru:</label>
-        <input type="text" name="name" required>
+<h1>Formularz 3: Parametry Techniczne</h1>
 
-        <label>Charakter optymalizacji:</label>
-        <select name="category">
+<form method="post">
+    <label>Nazwa parametru:
+        <input type="text" name="param_name">
+    </label>
+    <label>Typ:
+        <select name="param_type">
             <option value="Maksymalna">Maksymalna (↑)</option>
             <option value="Minimalna">Minimalna (↓)</option>
             <option value="Nominanta">Nominanta (○)</option>
         </select>
-        <button type="submit" class="btn">Dodaj</button>
-    </form>
+    </label>
+    <button type="submit" name="action" value="add">Dodaj</button>
+</form>
 
-    {% if parameters %}
-    <h3>Lista parametrów technicznych:</h3>
-    <table>
-        <tr>
-            <th>Nazwa</th><th>Kategoria</th><th>Usuń</th>
-        </tr>
-        {% for p in parameters %}
-        <tr>
-            <td>{{ p.name }}</td>
-            <td>{{ p.category }}</td>
-            <td><a class="icon-btn" href="{{ url_for('delete_parameter', index=loop.index0) }}">🗑️</a></td>
-        </tr>
-        {% endfor %}
-    </table>
-    {% endif %}
+<h2>Lista parametrów:</h2>
+<ul>
+    {% for param in technical_params %}
+    <li>
+        {{ loop.index }}. {{ param.name }} ({{ param.type }})
+        <form method="post" style="display:inline;">
+            <input type="hidden" name="delete_index" value="{{ loop.index0 }}">
+            <button type="submit" name="action" value="delete" title="Usuń">
+                🗑
+            </button>
+        </form>
+    </li>
+    {% endfor %}
+</ul>
 
-    {% if parameters|length > 0 %}
-    <form action="{{ url_for('form4') }}" method="GET">
-        <button type="submit" class="btn">Dalej</button>
-    </form>
-    {% endif %}
-</div>
+{% if technical_params|length > 0 %}
+<form method="post">
+    <button type="submit" name="action" value="next">Dalej</button>
+</form>
+{% endif %}
+
 </body>
 </html>

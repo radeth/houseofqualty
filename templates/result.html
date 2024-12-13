@@ -2,81 +2,83 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <title>Wynik QFD</title>
+    <title>Wynik</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+
 </head>
 <body>
-<div class="container">
-    <h2>Uproszczone drzewo QFD dla produktu: {{ product.name }}</h2>
-    <p>Opis: {{ product.description }}</p>
+<h1>Wynik - Drzewo QFD</h1>
 
-    <h3>Wymagania klientów (ważność):</h3>
-    <table>
-        <tr>
-            <th>Wymaganie</th><th>Ważność</th>
-        </tr>
-        {% for req in requirements %}
-        <tr>
-            <td>{{ req.name }}</td>
-            <td>{{ req.importance }}</td>
-        </tr>
+<h2>{{ product_name }}</h2>
+<p>{{ product_desc }}</p>
+
+<h3>Wymagania Klienta</h3>
+<ul>
+    {% for req in client_requirements %}
+    <li>{{ req.name }} (ważność: {{ req.importance }})</li>
+    {% endfor %}
+</ul>
+
+<h3>Parametry Techniczne</h3>
+<ul>
+    {% for param in technical_params %}
+    <li>{{ param.name }} ({{ param.type }})</li>
+    {% endfor %}
+</ul>
+
+<h3>Macierz Relacji Wymagania vs Parametry</h3>
+<table border="1" cellpadding="5">
+    <tr>
+        <th></th>
+        {% for param in technical_params %}
+        <th>{{ param.name }}</th>
         {% endfor %}
-    </table>
-
-    <h3>Parametry techniczne i kategorie:</h3>
-    <table>
-        <tr><th>Parametr</th><th>Kategoria</th><th>Znaczenie techniczne</th></tr>
-        {% for p, s in zip(parameters, significance) %}
-        <tr>
-            <td>{{ p.name }}</td>
-            <td>{{ p.category }}</td>
-            <td>{{ s }}</td>
-        </tr>
+    </tr>
+    {% for i, req in enumerate(client_requirements) %}
+    <tr>
+        <th>{{ req.name }} ({{ req.importance }})</th>
+        {% for j, param in enumerate(technical_params) %}
+        <td>{{ relations_matrix[i][j] }}</td>
         {% endfor %}
-    </table>
+    </tr>
+    {% endfor %}
+</table>
 
-    <h3>Macierz wymagań vs parametry (1,3,9):</h3>
-    <table>
-        <tr>
-            <th>Wymaganie \ Parametr</th>
-            {% for p in parameters %}
-            <th>{{ p.name }}</th>
-            {% endfor %}
-        </tr>
-        {% for i, req in enumerate(requirements) %}
-        <tr>
-            <td>{{ req.name }}</td>
-            {% for val in requirements_matrix[i] %}
-            <td>{{ val }}</td>
-            {% endfor %}
-        </tr>
+<h3>Macierz relacji pomiędzy Parametrami Technicznymi</h3>
+<table border="1" cellpadding="5">
+    <tr>
+        <th></th>
+        {% for param in technical_params %}
+        <th>{{ param.name }}</th>
         {% endfor %}
-    </table>
-
-    <h3>Macierz parametry vs parametry (brak, +, -):</h3>
-    <table>
-        <tr>
-            <th>Parametr \ Parametr</th>
-            {% for p in parameters %}
-            <th>{{ p.name }}</th>
-            {% endfor %}
-        </tr>
-        {% for i, p1 in enumerate(parameters) %}
-        <tr>
-            <td>{{ p1.name }}</td>
-            {% for val in parameters_matrix[i] %}
-            <td>{{ val }}</td>
-            {% endfor %}
-        </tr>
+    </tr>
+    {% for i, p1 in enumerate(technical_params) %}
+    <tr>
+        <th>{{ p1.name }}</th>
+        {% for j, p2 in enumerate(technical_params) %}
+        <td>{{ technical_relations_matrix[i][j] }}</td>
         {% endfor %}
-    </table>
+    </tr>
+    {% endfor %}
+</table>
 
-    <h3>Sugestie rozwojowe oparte na AI:</h3>
-    <pre>{{ suggestions }}</pre>
+<h3>Znaczenie Techniczne</h3>
+<ul>
+    {% for param, score in zip(technical_params, tech_scores) %}
+    <li>{{ param.name }}: {{ score }}</li>
+    {% endfor %}
+</ul>
 
-    <form action="{{ url_for('index') }}" method="GET">
-        <button type="submit" class="btn">Powrót do strony głównej</button>
-    </form>
-</div>
+<h3>Propozycja rozwoju produktu</h3>
+<p>Na podstawie obliczonych wartości znaczenia technicznego proponuje się skupić na rozwoju następujących parametrów
+    technicznych:</p>
+<ol>
+    {% for item in top_3 %}
+    <li>{{ item[0].name }} (waga: {{ item[1] }})</li>
+    {% endfor %}
+</ol>
+
+<p>Rozwijając powyższe parametry, produkt może lepiej spełnić wymagania klientów i poprawić swoją pozycję na rynku.</p>
+
 </body>
 </html>
