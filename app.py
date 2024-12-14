@@ -1,13 +1,21 @@
 from flask import Flask, render_template, request, redirect, url_for, session
 # from flask import Markup
+from openai import OpenAI
+
+from ai_connector import get_req_parm_matrix_from_ai
+
+client = OpenAI()
 
 app = Flask(__name__)
 app.secret_key = 'supersecretkey'  # Sekretny klucz do sesji
-app.jinja_env.globals.update(enumerate=enumerate,zip=zip)
+app.jinja_env.globals.update(enumerate=enumerate, zip=zip)
+
+
 @app.route('/')
 def index():
     # Strona główna
     return render_template('index.html')
+
 
 @app.route('/form1', methods=['GET', 'POST'])
 def form1():
@@ -25,6 +33,7 @@ def form1():
             session['technical_relations_matrix'] = []
             return redirect(url_for('form2'))
     return render_template('form1.html')
+
 
 @app.route('/form2', methods=['GET', 'POST'])
 def form2():
@@ -56,6 +65,7 @@ def form2():
                 return redirect(url_for('form3'))
 
     return render_template('form2.html', client_requirements=session['client_requirements'])
+
 
 @app.route('/form3', methods=['GET', 'POST'])
 def form3():
@@ -93,13 +103,9 @@ def form3():
 
     return render_template('form3.html', technical_params=session['technical_params'])
 
+
 @app.route('/form4', methods=['GET', 'POST'])
 def form4():
-    client_requirements = [
-        "Requirement 1",
-        "Requirement 2",
-        "Requirement 3"
-    ]
     # Macierz relacji wymagań klienta do parametrów technicznych
     if 'client_requirements' not in session or 'technical_params' not in session:
         return redirect(url_for('index'))
@@ -107,15 +113,19 @@ def form4():
     cr = session['client_requirements']
     tp = session['technical_params']
     relations_matrix = session.get('relations_matrix', [])
+    product_name = session.get('product_name', '')
+    product_desc = session.get('product_desc', '')
 
     if request.method == 'POST':
         action = request.form.get('action')
         if action == 'fill_ai':
-            # Uzupełnij wszystkie pola wartością '1'
-            for i in range(len(cr)):
-                for j in range(len(tp)):
-                    relations_matrix[i][j] = '1'
-            session['relations_matrix'] = relations_matrix
+            # Fill the matrix with 1
+            # relations_matrix = get_req_parm_matrix_from_ai(product_name, product_desc, cr, tp)
+            # for i in range(len(cr)):
+            #     for j in range(len(tp)):
+            #         relations_matrix[i][j] = '1'
+            relations_matrix_from_ai = get_req_parm_matrix_from_ai(product_name, product_desc, cr, tp)
+            session['relations_matrix'] = relations_matrix_from_ai
         elif action == 'save':
             # Zapisz dane z formularza
             all_filled = True
@@ -123,7 +133,7 @@ def form4():
                 for j in range(len(tp)):
                     field_name = f"relation_{i}_{j}"
                     value = request.form.get(field_name)
-                    if value is None or value not in ['1','3','9']:
+                    if value is None or value not in ['1', '3', '9']:
                         all_filled = False
                     else:
                         relations_matrix[i][j] = value
@@ -142,6 +152,7 @@ def form4():
 
     return render_template('form4.html', client_requirements=cr, technical_params=tp, relations_matrix=relations_matrix)
 
+
 @app.route('/form5', methods=['GET', 'POST'])
 def form5():
     # Macierz relacji parametrów technicznych między sobą
@@ -158,7 +169,7 @@ def form5():
             for i in range(len(tp)):
                 for j in range(len(tp)):
                     if i == j:
-                        technical_relations_matrix[i][j] = 'brak' # na przekątnej może być zawsze brak?
+                        technical_relations_matrix[i][j] = 'brak'  # na przekątnej może być zawsze brak?
                     else:
                         technical_relations_matrix[i][j] = 'brak'
             session['technical_relations_matrix'] = technical_relations_matrix
@@ -173,7 +184,7 @@ def form5():
                         value = 'brak'
                     else:
                         value = request.form.get(field_name)
-                    if value not in ['brak','pozytywna','negatywna']:
+                    if value not in ['brak', 'pozytywna', 'negatywna']:
                         all_filled = False
                     else:
                         technical_relations_matrix[i][j] = value
@@ -185,6 +196,7 @@ def form5():
                 pass
 
     return render_template('form5.html', technical_params=tp, technical_relations_matrix=technical_relations_matrix)
+
 
 @app.route('/result', methods=['GET'])
 def result():
@@ -199,7 +211,7 @@ def result():
     # Oblicz znaczenie techniczne parametrów:
     # Dla każdego parametru technicznego sumujemy: (ocena ważności wymagania * relacja)
     # relacja jest w {1,3,9}, waga wymagania w {1..10}
-    tech_scores = [0]*len(tp)
+    tech_scores = [0] * len(tp)
 
     for i, req in enumerate(cr):
         for j, param in enumerate(tp):
