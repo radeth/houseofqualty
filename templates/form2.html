@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Formularz 2</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link href="{{ url_for('static', filename='styles.css') }}" rel="stylesheet">
 
 </head>
 <body>
@@ -11,7 +11,7 @@
 
 <form method="post">
     <label>Nazwa wymagania:
-        <input type="text" name="req_name">
+        <input name="req_name" type="text">
     </label>
     <label>Ważność:
         <select name="req_importance">
@@ -20,7 +20,7 @@
             {% endfor %}
         </select>
     </label>
-    <button type="submit" name="action" value="add">Dodaj</button>
+    <button name="action" type="submit" value="add">Dodaj</button>
 </form>
 
 <h2>Lista wymagań:</h2>
@@ -29,8 +29,8 @@
     <li>
         {{ loop.index }}. {{ req.name }} (ważność: {{ req.importance }})
         <form method="post" style="display:inline;">
-            <input type="hidden" name="delete_index" value="{{ loop.index0 }}">
-            <button type="submit" name="action" value="delete" title="Usuń">
+            <input name="delete_index" type="hidden" value="{{ loop.index0 }}">
+            <button name="action" title="Usuń" type="submit" value="delete">
                 🗑
             </button>
         </form>
@@ -40,9 +40,11 @@
 
 {% if client_requirements|length > 0 %}
 <form method="post">
-    <button type="submit" name="action" value="next">Dalej</button>
+    <button name="action" type="submit" value="next">Dalej</button>
 </form>
 {% endif %}
-
+<form action="{{ url_for('back_to_form1') }}" method="post">
+    <button type="submit">Wstecz</button>
+</form>
 </body>
 </html>

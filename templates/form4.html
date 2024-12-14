@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Formularz 4</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link href="{{ url_for('static', filename='styles.css') }}" rel="stylesheet">
 
 </head>
 <body>
@@ -23,7 +23,7 @@
             {% for param_j, param in enumerate(technical_params) %}
             <td>
                 <select name="relation_{{req_i}}_{{param_j}}">
-                    <option value="" {% if relations_matrix[req_i][param_j] is none %}selected{% endif %}></option>
+                    <option value="" {% if relations_matrix[req_i][param_j]=='' %}selected{% endif %}></option>
                     <option value="1" {% if relations_matrix[req_i][param_j]=='1' %}selected{% endif %}>1</option>
                     <option value="3" {% if relations_matrix[req_i][param_j]=='3' %}selected{% endif %}>3</option>
                     <option value="9" {% if relations_matrix[req_i][param_j]=='9' %}selected{% endif %}>9</option>
@@ -34,9 +34,14 @@
         {% endfor %}
     </table>
     <br>
-    <button type="submit" name="action" value="fill_ai">Uzupełnij za pomocą AI (1)</button>
-    <button type="submit" name="action" value="save">Dalej</button>
+    <button name="action" type="submit" value="save">Dalej</button>
 </form>
+<form method="post">
+    <button name="action" type="submit" value="fill_ai">Uzupełnij za pomocą AI</button>
 
+</form>
+<form action="{{ url_for('back_to_form3') }}" method="post">
+    <button type="submit">Wstecz</button>
+</form>
 </body>
 </html>

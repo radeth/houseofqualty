@@ -3,42 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <title>Formularz 5</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link href="{{ url_for('static', filename='styles.css') }}" rel="stylesheet">
 </head>
 <body>
 <h1>Formularz 5: Macierz relacji pomiędzy Parametrami Technicznymi</h1>
 
 <form method="post">
-<table border="1" cellpadding="5">
-    <tr>
-        <th></th>
-        {% for param in technical_params %}
-        <th>{{ param.name }}</th>
-        {% endfor %}
-    </tr>
-    {% for i, p1 in enumerate(technical_params) %}
-    <tr>
-        <th>{{ p1.name }}</th>
-        {% for j, p2 in enumerate(technical_params) %}
-        <td>
-            {% if i == j %}
+    <table border="1" cellpadding="5">
+        <tr>
+            <th></th>
+            {% for param in technical_params %}
+            <th>{{ param.name }}</th>
+            {% endfor %}
+        </tr>
+        {% for i, p1 in enumerate(technical_params) %}
+        <tr>
+            <th>{{ p1.name }}</th>
+            {% for j, p2 in enumerate(technical_params) %}
+            <td>
+                {% if i == j %}
                 brak
-            {% else %}
-                <select name="tech_relation_{{i}}_{{j}}">
-                    <option value="brak" {% if technical_relations_matrix[i][j]=='brak' or technical_relations_matrix[i][j] is none %}selected{% endif %}>brak</option>
+                {% else %}
+                <select name="tech_relation_{{i}}_{{j}}" required>
+                    <option value="" {% if technical_relations_matrix[i][j]=='' %}selected{% endif %}></option>
+                    <option value="brak" {% if technical_relations_matrix[i][j]=='brak' %}selected{% endif %}>brak</option>
                     <option value="pozytywna" {% if technical_relations_matrix[i][j]=='pozytywna' %}selected{% endif %}>pozytywna</option>
                     <option value="negatywna" {% if technical_relations_matrix[i][j]=='negatywna' %}selected{% endif %}>negatywna</option>
                 </select>
-            {% endif %}
-        </td>
+                {% endif %}
+            </td>
+            {% endfor %}
+        </tr>
         {% endfor %}
-    </tr>
-    {% endfor %}
-</table>
-<br>
-<button type="submit" name="action" value="fill_ai">Uzupełnij za pomocą AI (brak)</button>
-<button type="submit" name="action" value="save">Dalej</button>
+    </table>
+    <br>
+    <button name="action" type="submit" value="fill_ai">Uzupełnij za pomocą AI</button>
+    <button name="action" type="submit" value="save">Dalej</button>
 </form>
-
+<form action="{{ url_for('back_to_form4') }}" method="post">
+    <button type="submit">Wstecz</button>
+</form>
 </body>
 </html>

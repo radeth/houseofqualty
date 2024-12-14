@@ -1,5 +1,4 @@
 import json
-from time import sleep
 
 from openai import OpenAI
 
@@ -94,7 +93,6 @@ def get_req_parm_matrix_from_ai(product_name, product_description, client_requir
     )
     data = json.loads(response.choices[0].message.content)
     return data['dependency_matrix']
-
 
 # Example usage
 # product_name = "Odkurzacz"

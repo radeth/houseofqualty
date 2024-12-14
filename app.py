@@ -1,3 +1,5 @@
+from time import sleep
+
 from flask import Flask, render_template, request, redirect, url_for, session
 # from flask import Markup
 from openai import OpenAI
@@ -14,7 +16,28 @@ app.jinja_env.globals.update(enumerate=enumerate, zip=zip)
 @app.route('/')
 def index():
     # Strona główna
+    session.clear()
     return render_template('index.html')
+
+
+@app.route('/back_to_form1', methods=['POST'])
+def back_to_form1():
+    return redirect(url_for('form1'))
+
+
+@app.route('/back_to_form2', methods=['POST'])
+def back_to_form2():
+    return redirect(url_for('form2'))
+
+
+@app.route('/back_to_form3', methods=['POST'])
+def back_to_form3():
+    return redirect(url_for('form3'))
+
+
+@app.route('/back_to_form4', methods=['POST'])
+def back_to_form4():
+    return redirect(url_for('form4'))
 
 
 @app.route('/form1', methods=['GET', 'POST'])
@@ -119,36 +142,16 @@ def form4():
     if request.method == 'POST':
         action = request.form.get('action')
         if action == 'fill_ai':
-            # Fill the matrix with 1
-            # relations_matrix = get_req_parm_matrix_from_ai(product_name, product_desc, cr, tp)
-            # for i in range(len(cr)):
-            #     for j in range(len(tp)):
-            #         relations_matrix[i][j] = '1'
             relations_matrix_from_ai = get_req_parm_matrix_from_ai(product_name, product_desc, cr, tp)
-            session['relations_matrix'] = relations_matrix_from_ai
-        elif action == 'save':
-            # Zapisz dane z formularza
-            all_filled = True
             for i in range(len(cr)):
                 for j in range(len(tp)):
-                    field_name = f"relation_{i}_{j}"
-                    value = request.form.get(field_name)
-                    if value is None or value not in ['1', '3', '9']:
-                        all_filled = False
-                    else:
-                        relations_matrix[i][j] = value
+                    relations_matrix[i][j] = relations_matrix_from_ai[i][j]
 
-            if all_filled:
-                session['relations_matrix'] = relations_matrix
-                # Przejdź dalej do form5
-                # Przygotuj macierz relacji parametrów technicznych do siebie
-                count_tp = len(tp)
-                technical_relations_matrix = [[None for _ in range(count_tp)] for _ in range(count_tp)]
-                session['technical_relations_matrix'] = technical_relations_matrix
-                return redirect(url_for('form5'))
-            else:
-                # Nie wszystkie pola uzupełnione
-                pass
+        elif action == 'save':
+            count_tp = len(tp)
+            technical_relations_matrix = [[None for _ in range(count_tp)] for _ in range(count_tp)]
+            session['technical_relations_matrix'] = technical_relations_matrix
+            return redirect(url_for('form5'))
 
     return render_template('form4.html', client_requirements=cr, technical_params=tp, relations_matrix=relations_matrix)
 
