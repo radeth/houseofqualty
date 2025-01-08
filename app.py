@@ -1,15 +1,13 @@
-from time import sleep
+import os
 
 from flask import Flask, render_template, request, redirect, url_for, session
-# from flask import Markup
 from openai import OpenAI
 
 from ai_connector import get_req_parm_matrix_from_ai
 
 client = OpenAI()
-
 app = Flask(__name__)
-app.secret_key = 'supersecretkey'  # Sekretny klucz do sesji
+app.secret_key = os.environ.get('SESSION_SECRET')
 app.jinja_env.globals.update(enumerate=enumerate, zip=zip)
 
 
@@ -53,7 +51,6 @@ def form1():
             session['client_requirements'] = []
             session['technical_params'] = []
             session['relations_matrix'] = []
-            session['technical_relations_matrix'] = []
             return redirect(url_for('form2'))
     return render_template('form1.html')
 
@@ -101,10 +98,9 @@ def form3():
         action = request.form.get('action')
         if action == 'add':
             param_name = request.form.get('param_name', '').strip()
-            param_type = request.form.get('param_type', '').strip()
-            if param_name and param_type:
+            if param_name:
                 tech_params = session['technical_params']
-                tech_params.append({'name': param_name, 'type': param_type})
+                tech_params.append({'name': param_name})
                 session['technical_params'] = tech_params
         elif action == 'delete':
             index_to_delete = request.form.get('delete_index')
@@ -146,76 +142,24 @@ def form4():
             for i in range(len(cr)):
                 for j in range(len(tp)):
                     relations_matrix[i][j] = relations_matrix_from_ai[i][j]
+                    session['relations_matrix'] = relations_matrix
 
         elif action == 'save':
-            count_tp = len(tp)
-            technical_relations_matrix = [[None for _ in range(count_tp)] for _ in range(count_tp)]
-            session['technical_relations_matrix'] = technical_relations_matrix
-            return redirect(url_for('form5'))
+            # session['relations_matrix'] = relations_matrix
+            return redirect(url_for('result'))
 
     return render_template('form4.html', client_requirements=cr, technical_params=tp, relations_matrix=relations_matrix)
 
 
-@app.route('/form5', methods=['GET', 'POST'])
-def form5():
-    # Macierz relacji parametrów technicznych między sobą
-    if 'technical_params' not in session:
-        return redirect(url_for('index'))
-
-    tp = session['technical_params']
-    technical_relations_matrix = session.get('technical_relations_matrix', [])
-
-    if request.method == 'POST':
-        action = request.form.get('action')
-        if action == 'fill_ai':
-            # Uzupełnij wszystkie pola wartością 'brak'
-            for i in range(len(tp)):
-                for j in range(len(tp)):
-                    if i == j:
-                        technical_relations_matrix[i][j] = 'brak'  # na przekątnej może być zawsze brak?
-                    else:
-                        technical_relations_matrix[i][j] = 'brak'
-            session['technical_relations_matrix'] = technical_relations_matrix
-        elif action == 'save':
-            # Zapisz dane z formularza
-            all_filled = True
-            for i in range(len(tp)):
-                for j in range(len(tp)):
-                    field_name = f"tech_relation_{i}_{j}"
-                    # Nieco logiczne - pole relacji dla (i,i) może być brak z definicji
-                    if i == j:
-                        value = 'brak'
-                    else:
-                        value = request.form.get(field_name)
-                    if value not in ['brak', 'pozytywna', 'negatywna']:
-                        all_filled = False
-                    else:
-                        technical_relations_matrix[i][j] = value
-            if all_filled:
-                session['technical_relations_matrix'] = technical_relations_matrix
-                return redirect(url_for('result'))
-            else:
-                # Nie wszystkie pola uzupełnione
-                pass
-
-    return render_template('form5.html', technical_params=tp, technical_relations_matrix=technical_relations_matrix)
-
-
 @app.route('/result', methods=['GET'])
 def result():
-    # Wyświetlenie drzewa QFD i wyliczeń
     product_name = session.get('product_name', '')
     product_desc = session.get('product_desc', '')
     cr = session.get('client_requirements', [])
     tp = session.get('technical_params', [])
     relations_matrix = session.get('relations_matrix', [])
-    technical_relations_matrix = session.get('technical_relations_matrix', [])
 
-    # Oblicz znaczenie techniczne parametrów:
-    # Dla każdego parametru technicznego sumujemy: (ocena ważności wymagania * relacja)
-    # relacja jest w {1,3,9}, waga wymagania w {1..10}
     tech_scores = [0] * len(tp)
-
     for i, req in enumerate(cr):
         for j, param in enumerate(tp):
             val = relations_matrix[i][j]
@@ -224,10 +168,7 @@ def result():
                 importance = req['importance']
                 tech_scores[j] += val_int * importance
 
-    # Propozycja rozwoju produktu - przykładowo:
-    # Wybierz parametry z najwyższą sumą punktów technicznych do wzmocnienia/usprawnienia
     sorted_params = sorted(zip(tp, tech_scores), key=lambda x: x[1], reverse=True)
-    # top_3 do rozwoju
     top_3 = sorted_params[:3] if len(sorted_params) >= 3 else sorted_params
 
     return render_template('result.html',
@@ -236,10 +177,10 @@ def result():
                            client_requirements=cr,
                            technical_params=tp,
                            relations_matrix=relations_matrix,
-                           technical_relations_matrix=technical_relations_matrix,
                            tech_scores=tech_scores,
-                           top_3=top_3)
+                           top_3=top_3,
+                           )
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, port=8080, host='0.0.0.0')

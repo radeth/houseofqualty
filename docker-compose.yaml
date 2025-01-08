@@ -1,0 +1,32 @@
+version: '3.9'  # lub inna wersja, zależnie od używanej wersji Docker Compose
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      FLASK_APP: app.py
+      FLASK_PORT: 8080
+    env_file:
+      - .env
+    networks:
+      - app-network
+
+  nginx:
+    image: nginx:latest
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx/.htpasswd:/etc/nginx/.htpasswd:ro
+    depends_on:
+      - app
+    networks:
+      - app-network
+
+networks:  # Sekcja `networks` powinna znajdować się na najwyższym poziomie
+  app-network:
+    driver: bridge

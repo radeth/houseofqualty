@@ -22,7 +22,7 @@
 <h3>Parametry Techniczne</h3>
 <ul>
     {% for param in technical_params %}
-    <li>{{ param.name }} ({{ param.type }})</li>
+    <li>{{ param.name }}</li>
     {% endfor %}
 </ul>
 
@@ -43,23 +43,6 @@
     </tr>
     {% endfor %}
 </table>
-
-<h3>Macierz relacji pomiędzy Parametrami Technicznymi</h3>
-<table border="1" cellpadding="5">
-    <tr>
-        <th></th>
-        {% for param in technical_params %}
-        <th>{{ param.name }}</th>
-        {% endfor %}
-    </tr>
-    {% for i, p1 in enumerate(technical_params) %}
-    <tr>
-        <th>{{ p1.name }}</th>
-        {% for j, p2 in enumerate(technical_params) %}
-        <td>{{ technical_relations_matrix[i][j] }}</td>
-        {% endfor %}
-    </tr>
-    {% endfor %}
 </table>
 
 <h3>Znaczenie Techniczne</h3>
