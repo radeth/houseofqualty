@@ -1,0 +1,86 @@
+{
+  "product_name": "Zmywarka",
+  "product_desc": "Standardowa zmywarka",
+  "client_requirements": [
+    {
+      "name": "dokładne zmywanie",
+      "importance": 10
+    },
+    {
+      "name": "różnorodne gabaryty",
+      "importance": 4
+    },
+    {
+      "name": "wysoka niezawodność",
+      "importance": 6
+    },
+    {
+      "name": "łatwa obsługa",
+      "importance": 6
+    },
+    {
+      "name": "wiele programów mycia",
+      "importance": 4
+    },
+    {
+      "name": "nastawienie czasowe włączania",
+      "importance": 4
+    },
+    {
+      "name": "nowoczesny i ładny wygląd",
+      "importance": 3
+    },
+    {
+      "name": "niskie zużycie energii elektrycznej",
+      "importance": 10
+    },
+    {
+      "name": "niskie zużycie wody",
+      "importance": 10
+    }
+  ],
+  "technical_params": [
+    {
+      "name": "temperatury zmywania"
+    },
+    {
+      "name": "gabaryty"
+    },
+    {
+      "name": "materiał dna"
+    },
+    {
+      "name": "zużycie energii"
+    },
+    {
+      "name": "zużycie wody"
+    },
+    {
+      "name": "kolorystyka obudowy"
+    },
+    {
+      "name": "typ panelu sterowania"
+    },
+    {
+      "name": "długość kabla zasilającego"
+    },
+    {
+      "name": "poziom hałasu"
+    },
+    {
+      "name": "regulacja półek"
+    },
+    {
+      "name": "autoodkamienianie i czyszczenie"
+    },
+    {
+      "name": "liczba programów zmywania"
+    },
+    {
+      "name": "materiał obudowy"
+    },
+    {
+      "name": "wskaźnik pracy"
+    }
+  ]
+}
