@@ -7,6 +7,12 @@
 </head>
 <body>
 <h1>Witaj w aplikacji QFD</h1>
+<p></p>
 <p><a href="{{ url_for('form1') }}">Rozpocznij</a></p>
+<h1>Importer plików JSON</h1>
+<form action="/" method="post" enctype="multipart/form-data">
+    <input type="file" name="file" accept=".json" required>
+    <button type="submit">Importuj</button>
+</form>
 </body>
 </html>
