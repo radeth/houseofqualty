@@ -1,3 +1,4 @@
+import json
 import os
 
 from flask import Flask, render_template, request, redirect, url_for, session
@@ -9,13 +10,6 @@ client = OpenAI()
 app = Flask(__name__)
 app.secret_key = os.environ.get('SESSION_SECRET')
 app.jinja_env.globals.update(enumerate=enumerate, zip=zip)
-
-
-@app.route('/')
-def index():
-    # Strona główna
-    session.clear()
-    return render_template('index.html')
 
 
 @app.route('/back_to_form1', methods=['POST'])
@@ -36,6 +30,31 @@ def back_to_form3():
 @app.route('/back_to_form4', methods=['POST'])
 def back_to_form4():
     return redirect(url_for('form4'))
+
+
+@app.route('/', methods=['GET', 'POST'])
+def index():
+    # Strona główna
+    if request.method == 'POST':
+        if 'file' not in request.files:
+            return redirect(request.url)
+        file = request.files['file']
+        if file.filename == '':
+            return redirect(request.url)
+        if file and file.filename.endswith('.json'):
+            try:
+                content = json.load(file)
+                session['product_name'] = content["product_name"]
+                session['product_desc'] = content["product_desc"]
+                cr = content["client_requirements"]
+                session['client_requirements'] = cr
+                tp = content["technical_params"]
+                session['technical_params'] = tp
+                session['relations_matrix'] = [[0 for j in range(len(cr))] for i in range(len(tp))]
+                return redirect(url_for('form4'))
+            except json.JSONDecodeError:
+                return "Niepoprawny format pliku JSON", 400
+    return render_template('index.html')
 
 
 @app.route('/form1', methods=['GET', 'POST'])
@@ -138,14 +157,13 @@ def form4():
     if request.method == 'POST':
         action = request.form.get('action')
         if action == 'fill_ai':
-            relations_matrix_from_ai = get_req_parm_matrix_from_ai(product_name, product_desc, cr, tp)
-            for i in range(len(cr)):
-                for j in range(len(tp)):
-                    relations_matrix[i][j] = relations_matrix_from_ai[i][j]
-                    session['relations_matrix'] = relations_matrix
+            session['relations_matrix'] = get_req_parm_matrix_from_ai(product_name, product_desc, cr, tp)
+            # for j in range(len(cr)):
+            #     for i in range(len(tp)):
+            #         relations_matrix[i][j] = relations_matrix_from_ai[i][j]
+            # session['relations_matrix'] = relations_matrix
 
         elif action == 'save':
-            # session['relations_matrix'] = relations_matrix
             return redirect(url_for('result'))
 
     return render_template('form4.html', client_requirements=cr, technical_params=tp, relations_matrix=relations_matrix)

@@ -93,7 +93,11 @@ def get_req_parm_matrix_from_ai(product_name, product_description, client_requir
         presence_penalty=0
     )
     data = json.loads(response.choices[0].message.content)
-    return data['dependency_matrix']
+    return transpose(data['dependency_matrix'])
+
+
+def transpose(matrix):
+    return list(map(list, zip(*matrix)))
 
 
 def get_openai_suggestions(product_name, product_description, client_requirements, technical_parameters):
@@ -127,4 +131,3 @@ def get_openai_suggestions(product_name, product_description, client_requirement
     )
     data = json.loads(response.choices[0].message.content)
     return data['dependency_matrix']
-
