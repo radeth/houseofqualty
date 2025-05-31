@@ -158,11 +158,6 @@ def form4():
         action = request.form.get('action')
         if action == 'fill_ai':
             session['relations_matrix'] = get_req_parm_matrix_from_ai(product_name, product_desc, cr, tp)
-            # for j in range(len(cr)):
-            #     for i in range(len(tp)):
-            #         relations_matrix[i][j] = relations_matrix_from_ai[i][j]
-            # session['relations_matrix'] = relations_matrix
-
         elif action == 'save':
             return redirect(url_for('result'))
 

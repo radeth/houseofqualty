@@ -24,6 +24,7 @@
             <td>
                 <select name="relation_{{req_i}}_{{param_j}}">
                     <option value="" {% if relations_matrix[req_i][param_j]=='' %}selected{% endif %}></option>
+                    <option value="0" {% if relations_matrix[req_i][param_j]=='0' %}selected{% endif %}>0</option>
                     <option value="1" {% if relations_matrix[req_i][param_j]=='1' %}selected{% endif %}>1</option>
                     <option value="3" {% if relations_matrix[req_i][param_j]=='3' %}selected{% endif %}>3</option>
                     <option value="9" {% if relations_matrix[req_i][param_j]=='9' %}selected{% endif %}>9</option>

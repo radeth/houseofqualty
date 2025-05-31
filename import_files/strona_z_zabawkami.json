@@ -1,0 +1,56 @@
+{
+  "product_name": "Serwis z zabawkami",
+  "product_desc": "Serwis internetowy do prezentacji i sprzedaży zabawek",
+  "client_requirements": [
+    {
+      "name": "łatwe dotarcie przez wyszukiwarki",
+      "importance": 2
+    },
+    {
+      "name": "łatwe wyszukiwanie informacji",
+      "importance": 5
+    },
+    {
+      "name": "dokładne zdjęcia zabawek",
+      "importance": 5
+    },
+    {
+      "name": "wyczerpujący opis zabawek",
+      "importance": 2
+    },
+    {
+      "name": "wpływ na zawartość serwisu",
+      "importance": 3
+    },
+    {
+      "name": "bezpieczeństwo transakcji",
+      "importance": 4
+    }
+  ],
+  "technical_params": [
+    {
+      "name": "struktura wg grup asortymentowych"
+    },
+    {
+      "name": "mapa serwisu"
+    },
+    {
+      "name": "wyszukiwarka na stronie"
+    },
+    {
+      "name": "jakość grafiki"
+    },
+    {
+      "name": "rozmiar bloków tekstu"
+    },
+    {
+      "name": "potwierdzenie ważnych informacji"
+    },
+    {
+      "name": "opinie innych użytkowników"
+    },
+    {
+      "name": "procedura aktualizacji"
+    }
+  ]
+}
